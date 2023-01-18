@@ -44,10 +44,12 @@ pub unsafe fn init(ty: ApplicationType) -> Result<Context, InitError> {
     let mut error = sys::EVRInitError_VRInitError_None;
     sys::VR_InitInternal(&mut error, ty as sys::EVRApplicationType);
     if error != sys::EVRInitError_VRInitError_None {
+        INITIALIZED.store(false, Ordering::Release);
         return Err(InitError(error));
     }
     if !sys::VR_IsInterfaceVersionValid(sys::IVRSystem_Version.as_ptr() as *const i8) {
         sys::VR_ShutdownInternal();
+        INITIALIZED.store(false, Ordering::Release);
         return Err(InitError(
             sys::EVRInitError_VRInitError_Init_InterfaceNotFound,
         ));
