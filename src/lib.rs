@@ -16,6 +16,7 @@ pub mod compositor;
 pub mod property;
 pub mod render_models;
 pub mod system;
+pub mod settings;
 
 pub use tracking::*;
 
@@ -57,6 +58,7 @@ pub unsafe fn init(ty: ApplicationType) -> Result<Context, InitError> {
     Ok(Context { live: AtomicBool::new(true) })
 }
 
+pub struct Settings(&'static sys::VR_IVRSettings_FnTable);
 pub struct System(&'static sys::VR_IVRSystem_FnTable);
 pub struct Compositor(&'static sys::VR_IVRCompositor_FnTable);
 pub struct RenderModels(&'static sys::VR_IVRRenderModels_FnTable);
@@ -83,6 +85,9 @@ fn load<T>(suffix: &[u8]) -> Result<*const T, InitError> {
 }
 
 impl Context {
+    pub fn settings(&self) -> Result<Settings, InitError> {
+        load(sys::IVRSettings_Version).map(|x| unsafe { Settings(&*x) })
+    }
     pub fn system(&self) -> Result<System, InitError> {
         load(sys::IVRSystem_Version).map(|x| unsafe { System(&*x) })
     }
